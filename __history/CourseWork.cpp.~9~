@@ -1,0 +1,43 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+#include <tchar.h>
+
+#include "Patient.h"
+//---------------------------------------------------------------------------
+USEFORM("MainUnit.cpp", MainForm);
+USEFORM("Table.cpp", FTable);
+USEFORM("DonorInfo.cpp", InfoDonor);
+USEFORM("AddUnit.cpp", FormAdd);
+//---------------------------------------------------------------------------
+int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
+{
+	try
+	{
+		Application->Initialize();
+		Application->MainFormOnTaskBar = true;
+		Application->CreateForm(__classid(TMainForm), &MainForm);
+		Application->CreateForm(__classid(TInfoDonor), &InfoDonor);
+		Application->CreateForm(__classid(TFTable), &FTable);
+		Application->CreateForm(__classid(TFormAdd), &FormAdd);
+		Application->Run();
+	}
+	catch (Exception &exception)
+	{
+		Application->ShowException(&exception);
+	}
+	catch (...)
+	{
+		try
+		{
+			throw Exception("");
+		}
+		catch (Exception &exception)
+		{
+			Application->ShowException(&exception);
+		}
+	}
+	return 0;
+}
+//---------------------------------------------------------------------------

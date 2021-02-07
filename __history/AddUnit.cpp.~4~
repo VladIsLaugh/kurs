@@ -1,0 +1,55 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+
+#include "AddUnit.h"
+
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TFormAdd *FormAdd;
+//---------------------------------------------------------------------------
+__fastcall TFormAdd::TFormAdd(TComponent* Owner, vector<CPatient> vPatients)
+	: TForm(Owner)
+{
+   CBGroup->ItemIndex=0;
+}
+//---------------------------------------------------------------------------
+void __fastcall TFormAdd::Button1Click(TObject *Sender)
+{
+
+	CPatient add;
+
+	try{
+	 add.setSurname(AnsiString(LESurname->Text).c_str());
+	 throw("Неправильно введене прізвище");
+	 }
+	 catch(const char* message){ ShowMessage(message);}
+
+	 try{
+	 add.setName(AnsiString(LEName->Text).c_str());
+	 throw("Неправильно введене ім'я");
+	 }
+	  catch(const char* message){ShowMessage(message);}
+
+	 try{
+	 add.setSPressure(StrToInt(LESPressure->Text));
+	 throw("Неправильно введена верхня межа тиску");
+	 }
+	  catch(const char* message){ShowMessage(message);}
+
+      try{
+	 add.setDPressure(StrToInt(LEDPressure->Text));
+	 throw("Неправильно введена нижня межа тиску");
+	 }
+	  catch(const char* message){ShowMessage(message);}
+
+	 try{
+	 add.setPulse(StrToInt(LEPulse->Text));
+	 throw("Неправильно введений пульс");
+	 }
+	 catch(const char* message){ShowMessage(message);}
+}
+//---------------------------------------------------------------------------
+

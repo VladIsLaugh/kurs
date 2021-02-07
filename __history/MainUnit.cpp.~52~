@@ -1,0 +1,470 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+
+#include "DonorInfo.h"
+
+
+#include "MainUnit.h"
+#include <string>
+#include "Patient.h"
+#include "Registry.h"
+#include "Functions.h"
+#include "AddUnit.h"
+#include "HelpUnit.h"
+using namespace std;
+
+UnicodeString file_name = "";
+TStringList *strfile = new TStringList;
+CRegistry* journal = new CRegistry;
+
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TMainForm *MainForm;
+//---------------------------------------------------------------------------
+__fastcall TMainForm::TMainForm(TComponent* Owner)
+	: TForm(Owner)
+{
+	//початкові налаштування компонент форми
+	//при запуску програми
+	SGMain->Width=750;
+	SGMain->Height=700;
+	SGMain->Top=100;
+	SGRecipients->Width=750;
+	SGRecipients->Height=700;
+	SGRecipients->Top=100;
+	SGDonors->Width=750;
+	SGDonors->Height=700;
+	SGDonors->Top=100;
+
+
+	SGMain->ColWidths[0]=45;
+	SGMain->ColWidths[1]=150;
+	SGMain->ColWidths[2]=150;
+	SGMain->ColWidths[7]=130;
+	SGMain->ColWidths[3]=85;
+	SGMain->ColWidths[4]=85;
+	SGMain->ColWidths[5]=85;
+	SGMain->ColWidths[6]=150;
+
+	SGMain->Cells[0][0]="№";
+	SGMain->Cells[1][0]="Прізвище";
+	SGMain->Cells[2][0]="Ім'я";
+	SGMain->Cells[3][0]="Група крові";
+	SGMain->Cells[4][0]="Резус";
+	SGMain->Cells[5][0]="Тиск";
+	SGMain->Cells[6][0]="Пульс";
+
+	SGRecipients->Cells[0][1]="Реціпієнт для:";
+	SGDonors->Cells[0][1]="Донор для:";
+
+	SGMain->Visible=true;
+	SGRecipients->Visible=false;
+	SGDonors->Visible=false;
+
+	//ф-ції для відстеження натиску комбінації клавіш
+	//RHKSave: Ctrl+S
+	bool RHKSave = RegisterHotKey(MainForm->Handle,0x01F, MOD_CONTROL, 0x53);
+	//RHKSaveAs: Ctrl+Alt+S
+	bool RHKSaveAs = RegisterHotKey(MainForm->Handle,0x02F, MOD_CONTROL+MOD_ALT, 0x53);
+	//RHKOpen: Ctrl+O
+	bool RHKOpen = RegisterHotKey(MainForm->Handle,0x03F, MOD_CONTROL, 0x4F);
+
+}
+//---------------------------------------------------------------------------
+
+//ф-ція при зміні статусу TabControl
+void __fastcall TMainForm::TabControlChange(TObject *Sender)
+{
+	//вивід таблиці Донор->Реціпієнт
+	showDonors(SGDonors, journal->getRegistry());
+	//вивід таблиці Реціпієнт->Донор
+	showRecipients(SGRecipients, journal->getRegistry());
+
+	if(TabControl->TabIndex==0){
+		SGMain->Visible=true;
+		SGRecipients->Visible=false;
+		SGDonors->Visible=false;
+		BBDelete->Enabled=true;
+	}
+	else if(TabControl->TabIndex==1){
+		SGMain->Visible=false;
+		SGRecipients->Visible=true;
+		SGDonors->Visible=false;
+		BBDelete->Enabled=false;
+	}
+	else if(TabControl->TabIndex==2){
+		SGMain->Visible=false;
+		SGRecipients->Visible=false;
+		SGDonors->Visible=true;
+		BBDelete->Enabled=false;
+	}
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки "Сортувати"
+void __fastcall TMainForm::BSortClick(TObject *Sender)
+{
+	SGMain->Width=750;
+
+	//якщо список пацінтів пустий - показати повідомлення
+	try {
+		if(journal->IsEmpty()) throw ("Список пустий");
+		if(RGSort->ItemIndex) {
+			sortByPressure(journal->getRegistry(), 0, journal->getSize() - 1, 0);
+		}
+		else {
+		   sortByPressure(journal->getRegistry(), 0, journal->getSize() - 1, 1);
+		}
+	}
+	catch(const char * m) {ShowMessage(m);}
+
+	//вивести оновлену інформацію у відповідні таблиці
+	journal->show(SGMain);
+	showDonors(SGDonors, journal->getRegistry());
+	showRecipients(SGRecipients, journal->getRegistry());
+
+
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки "Повідомлення"
+void __fastcall TMainForm::BMessageClick(TObject *Sender)
+{
+	//збільшити розмір головної таблиці для
+	//відображення повідомлення
+	SGMain->Width=880;
+
+	SGMain->Cols[7]->Clear();
+	SGMain->Cells[7][0]="Повідомлення";
+
+	//повідомлення для пацієнтів з
+	//верхнім тиском від 100 до 130
+	//нижнім тиском від 70 до 80
+	int SPress, DPress;
+	for(int i=0; i<journal->getSize(); i++)
+	{
+		SPress = (*journal)[i].getSPressure();
+		DPress = (*journal)[i].getDPressure();
+		if((SPress>=100)&&(SPress<=130)&&
+			(DPress>=70)&&(DPress<=80)){
+			SGMain->Cells[7][i+1] = "ЗДОРОВИЙ!";
+		}
+	}
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки групування
+void __fastcall TMainForm::BGroupClick(TObject *Sender)
+{
+	SGMain->Width=750;
+
+	//якщо список пустий вивести повідомлення
+	try {
+		if(journal->IsEmpty()) throw ("Список пустий");
+		if(RGGroup->ItemIndex) {            //групувати за резус-фактором
+			if(RGSort->ItemIndex){
+				journal->groupRhFactor(0);  //сортувати пульс при
+											//групуванні за спаданням
+			}
+			else {
+				journal->groupRhFactor(1);  //сортувати пульс  при
+											//групуванні за зростанням
+			}
+		}
+		else {
+			journal->groupBloodType();      //групувати за групою крові
+		}
+	}
+	catch(const char * m) { ShowMessage(m); }
+
+	//вивід оновленої інформації у відповідні таблиці
+	journal->show(SGMain);
+	showDonors(SGDonors, journal->getRegistry());
+	showRecipients(SGRecipients, journal->getRegistry());
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки "Сумісність груп крові"
+void __fastcall TMainForm::ShowInfoClick(TObject *Sender)
+{
+	//відкрити форму InfoDonor
+   InfoDonor->Show();
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Функції/Показати повідомлення
+void __fastcall TMainForm::funcMessageClick(TObject *Sender)
+{
+    BMessage->Click();
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Функції/Показати сумісність груп крові
+void __fastcall TMainForm::funcInfoClick(TObject *Sender)
+{
+    ShowInfo->Click();
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Функції/Зрупувати за резус-фактором
+void __fastcall TMainForm::funcRhClick(TObject *Sender)
+{
+	RGGroup->ItemIndex=1;
+	BGroup->Click();
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Функції/Зрупувати за групою крові
+void __fastcall TMainForm::funcGroupClick(TObject *Sender)
+{
+	RGGroup->ItemIndex=0;
+	BGroup->Click();
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Функції/Відсортувати за тиском
+void __fastcall TMainForm::funcSortClick(TObject *Sender)
+{
+    BSort->Click();
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Функції/Додати пацієнта
+void __fastcall TMainForm::funcAddClick(TObject *Sender)
+{
+	BBAdd->Click();
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Файл/Вихід
+void __fastcall TMainForm::ExitClick(TObject *Sender)
+{
+    this->Close();
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Файл/Зберегти як
+//зберігає інформацію з таблички у файл
+//з назвою обраною користувачем
+void __fastcall TMainForm::CtrlAltS1Click(TObject *Sender)
+{
+	AnsiString str;
+	SGMain->Cols[7]->Clear();
+
+	//якщо дескриптор файлу не створений вивести попередження
+	try {
+		if(SaveDialog->Execute())
+		{
+			int f;
+			//якщо файл з таким ім'ям не існує створити новий
+			if(FileExists(SaveDialog->FileName))
+				f=FileOpen(SaveDialog->FileName, fmOpenWrite) ;
+			else
+				f = FileCreate(SaveDialog->FileName);
+			//запис інформації у файл
+			if(f != -1)
+			{
+				strfile->Clear();
+				strfile->SaveToFile(f);
+				for(int i = 0; i < journal->getSize(); i++) {
+					for(int j=0; j < SGMain->ColCount-1; j++) {
+						str = SGMain->Cells[j+1][i+1];
+						//зміна символьного формату групи крові у числове значення
+						if(j==2) {
+							if(str=="I") str = "1";
+							else if(str=="II") str = "2";
+							else if(str=="III") str = "3";
+							else if(str=="IV") str = 4;
+							}
+						str = str + " ";
+						FileWrite(f, str.c_str(), str.Length());
+					}
+					str = "\r\n";
+					FileWrite(f, str.c_str(), str.Length());
+				}
+				FileClose(f);
+			}
+			else throw("Невдалось зберегти файл");
+		}
+	}
+	catch(const char * m) { ShowMessage(m); }
+	catch(...) {ShowMessage("При збереженні файлу виникла помилка, спробуйте ще раз");}
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Файл/Зберегти
+void __fastcall TMainForm::CtrlS1Click(TObject *Sender)
+{
+	BBSave->Click();
+}
+//---------------------------------------------------------------------------
+
+//Функція кнопки зберегти
+//записує оновлену інформацію з таблички у змінений файл
+void __fastcall TMainForm::BBSaveClick(TObject *Sender)
+{
+	//очистити колонку з повідомленням
+	SGMain->Cols[7]->Clear();
+
+	AnsiString str;
+
+	//якщо список пустий чи файл не обрано вивести попередження
+	try {
+		if(journal->IsEmpty()) throw ("Список пустий");
+		if(file_name=="") CtrlAltS1->Click();
+		else {
+			int f;
+			if(FileExists(file_name))
+				f=FileOpen(file_name, fmOpenWrite) ;
+			else
+				throw("Файл не обрано");
+			if(f != -1)
+			{
+				for(int i = 0; i < journal->getSize(); i++) {
+					for(int j=0; j < SGMain->ColCount-1; j++) {
+						str = SGMain->Cells[j+1][i+1];
+						//зміна символьного формату групи крові у числове значення
+						if(j==2) {
+							if(str=="I") str = "1";
+							else if(str=="II") str = "2";
+							else if(str=="III") str = "3";
+							else if(str=="IV") str = 4;
+							}
+						str = str + " ";
+						FileWrite(f, str.c_str(), str.Length());
+					}
+					str = "\r\n";
+					FileWrite(f, str.c_str(), str.Length());
+				}
+				FileClose(f);
+			}
+			else throw("Невдалось зберегти файл");
+		}
+	}
+	catch(const char * m) { ShowMessage(m); }
+	catch(...) {ShowMessage("При збереженні файлу виникла помилка, спробуйте ще раз");}
+
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Файл/Відкрити
+void __fastcall TMainForm::CtrlOClick(TObject *Sender)
+{
+	BBOpen->Click();
+}
+//---------------------------------------------------------------------------
+
+//ф-ція для відстеженя натиску комбінації клавіш
+void __fastcall TMainForm::ApplicationEvents1Message(tagMSG &Msg, bool &Handled)
+{
+	//RHKSave: Ctrl+S
+	if (Msg.message == WM_HOTKEY)
+	{
+		if (Msg.wParam == 0x01F)
+				{
+					BBSave->Click();
+				}
+	}
+
+	//RHKSaveAs: Ctrl+Alt+S
+	if (Msg.message == WM_HOTKEY)
+	{
+		if (Msg.wParam == 0x02F)
+				{
+					CtrlAltS1->Click();
+				}
+	}
+
+	//RHKOpen: Ctrl+O
+	if (Msg.message == WM_HOTKEY)
+	{
+		if (Msg.wParam == 0x03F)
+				{
+					CtrlO->Click();
+				}
+	}
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки меню Довідка
+void __fastcall TMainForm::menuHelpClick(TObject *Sender)
+{
+	//відкрити вікно FormHelp
+	TFormHelp * FH = new TFormHelp(this);
+	FH->ShowModal();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TMainForm::BBOpenClick(TObject *Sender)
+{
+	SGMain->Width=750;
+
+	int size;
+	OpenTextFileDialog-> Execute();
+
+	//якщо файл не було обрано вивести попередження
+	try{
+		if(OpenTextFileDialog->FileName=="")
+		throw "Файл не обрано";
+		file_name = OpenTextFileDialog->FileName;
+		strfile->LoadFromFile(OpenTextFileDialog->FileName);
+		size=strfile->Count;
+	}
+	catch(const char* message) {ShowMessage(message);}
+
+	//очистка журналу пацієнтів і запис отриманої інформації
+	journal->clear();
+	journal->loadInfoFromFile(strfile);
+
+	//вивід оновленої інформації у відповідні таблиці
+	journal->show(SGMain);
+	showDonors(SGDonors, journal->getRegistry());
+	showRecipients(SGRecipients, journal->getRegistry());
+
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки "Додати пацієнта"
+void __fastcall TMainForm::BBAddClick(TObject *Sender)
+{
+	SGMain->Width=750;
+
+	//відкрити форму FormAdd
+	TFormAdd* FA = new TFormAdd(this);
+	FA->ShowModal();
+
+	//якщо дію підтверджено записати отриману
+	//з форми інформацію у об'єкт класу Patient
+	//та додати об'єкт в CRegistry
+	CPatient newPatient = FA->add;
+	if(!FA->cancelFlag){
+		journal->addPatient(newPatient);
+		journal->show(SGMain);
+		showDonors(SGDonors, journal->getRegistry());
+		showRecipients(SGRecipients, journal->getRegistry());
+	}
+}
+//---------------------------------------------------------------------------
+
+//ф-ція кнопки видалення пацієнта
+void __fastcall TMainForm::BBDeleteClick(TObject *Sender)
+{
+	//вивести діалолгове підтвердження видалення пацієнта
+	if (MessageBox(0,"Бажаєте видалити обраного пацієнта?", "Підтвердіть дію",MB_YESNO|MB_ICONQUESTION) == IDYES)
+	{
+        //якщо в обраному рядку немає запису вивести попередження
+		try{
+			if(SGMain->Row-1>journal->getSize()) throw("Обраний рядок пустий");
+			journal->deletePatient(SGMain->Row-1);
+			journal->show(SGMain);
+			showDonors(SGDonors, journal->getRegistry());
+			showRecipients(SGRecipients, journal->getRegistry());
+		}
+		catch(const char * m){ ShowMessage(m);}
+	}
+}
+//---------------------------------------------------------------------------
+

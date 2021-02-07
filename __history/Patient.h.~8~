@@ -1,0 +1,42 @@
+//---------------------------------------------------------------------------
+
+#ifndef PatientH
+#define PatientH
+#include <stdlib>
+#include <vcl.h>
+#include <string>
+#include <stdlib.h>
+#include <Vcl.Grids.hpp>
+
+//#include <>
+using namespace std;
+
+class CPatient
+{
+	string m_anstrName;
+	string m_anstrSurname;
+	int m_iBloodType;
+	bool m_bRhFactor;
+	int m_iPressure;
+	int m_iPulse;
+ public:
+	CPatient() {}
+	CPatient(string Name, string Surname, int BloodType,
+	bool RhFactor, int Pressure, int Pulse);
+	string getName() {return m_anstrName;}
+	string getSurname() {return m_anstrSurname;}
+	int getBloodType() {return m_iBloodType;}
+	bool getRhFactor() {return m_bRhFactor;}
+	int getPressure() {return m_iPressure;}
+	int getPulse() {return m_iPulse;}
+	void setName(string Name) { m_anstrName=Name;}
+	void setSurname(string Surname) { m_anstrSurname=Surname;}
+	void setBloodType(int BloodType) { m_iBloodType=BloodType;}
+	void setRhFactor(bool RhFactor) { m_bRhFactor=RhFactor;}
+	void setPressure(int Pressure) { m_iPressure=Pressure;}
+	void setPulse(int Pulse) { m_iPulse=Pulse;}
+	void printToSG(TStringGrid *, int );
+   	CPatient& operator=(CPatient pat);
+};
+//---------------------------------------------------------------------------
+#endif

@@ -1,0 +1,27 @@
+//---------------------------------------------------------------------------
+
+#ifndef TableH
+#define TableH
+//---------------------------------------------------------------------------
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Forms.hpp>
+#include <Vcl.Grids.hpp>
+
+#include "Patient.h"
+#include "Registry.h"
+#include <vector>
+//---------------------------------------------------------------------------
+class TFTable : public TForm
+{
+__published:	// IDE-managed Components
+	TStringGrid *SGTable;
+private:	// User declarations
+public:		// User declarations
+	__fastcall TFTable(TComponent* Owner, vector<CPatient> &);
+};
+//---------------------------------------------------------------------------
+extern PACKAGE TFTable *FTable;
+//---------------------------------------------------------------------------
+#endif

@@ -1,0 +1,13 @@
+//---------------------------------------------------------------------------
+
+#ifndef FunctionsH
+#define FunctionsH
+#include "Patient.h"
+#include "Registry.h"
+
+void sortByPressure(CRegistry **, int, int);
+
+
+
+//---------------------------------------------------------------------------
+#endif

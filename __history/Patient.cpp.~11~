@@ -1,0 +1,45 @@
+//---------------------------------------------------------------------------
+
+#include "Patient.h"
+
+void CPatient::printToSG(TStringGrid * SG, int i)
+{
+	SG->Cells[0][i]=IntToStr(i);
+	SG->Cells[1][i]=this->getSurname().c_str();
+	SG->Cells[2][i]=this->getName().c_str();
+
+	int tmp=this->getBloodType();
+	switch(tmp)
+	{
+		case 1: SG->Cells[3][i]="I"; break;
+		case 2: SG->Cells[3][i]="II"; break;
+		case 3:	SG->Cells[3][i]="III"; break;
+		default: 	SG->Cells[3][i]="IV";
+	}
+
+	if(this->getRhFactor()){
+		SG->Cells[4][i]="+";
+	}
+	else {
+		SG->Cells[4][i]="-";
+	}
+	SG->Cells[5][i]=IntToStr(this->getSPressure())+"/"
+	+IntToStr(this->getDPressure());
+	SG->Cells[6][i]=IntToStr(this->getPulse());
+}
+
+CPatient& CPatient::operator=(CPatient pat)
+{
+	m_anstrName = pat.getName();
+	m_anstrSurname = pat.getSurname();
+	m_iBloodType = pat.getBloodType();
+	m_bRhFactor = pat.getRhFactor();
+	m_iSPressure = pat.getSPressure();
+	m_iDPressure = pat.getDPressure();
+	m_iPulse = pat.getPulse();
+
+	return *this;
+}
+
+//---------------------------------------------------------------------------
+

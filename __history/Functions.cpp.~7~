@@ -1,0 +1,334 @@
+//---------------------------------------------------------------------------
+
+#pragma hdrstop
+
+#include "Functions.h"
+
+void sortByPressure(vector<CPatient> & vec, int left, int right, bool increase)
+{
+	int i = left, j = right;
+	CPatient tmp;
+	int pivot = vec[(left + right) / 2].getSPressure();
+
+	if(increase){
+		while (i <= j)
+		{
+			while (vec[i].getSPressure() < pivot)
+				i++;
+			while (vec[j].getSPressure() > pivot)
+				j--;
+			if (i <= j) {
+					tmp = vec[i];
+					vec[i] = vec[j];
+					vec[j] = tmp;
+
+				i++;
+				j--;
+			}
+		};
+		//рекурсія
+		if (left < j)
+			sortByPressure(vec, left, j, 1);
+		if (i < right)
+			sortByPressure(vec, i, right, 1);
+	}
+
+	else {
+		while (i <= j)
+		{
+			while (vec[i].getSPressure() > pivot)
+				i++;
+			while (vec[j].getSPressure() < pivot)
+				j--;
+			if (i <= j) {
+					tmp = vec[i];
+					vec[i] = vec[j];
+					vec[j] = tmp;
+
+				i++;
+				j--;
+			}
+		};
+		//рекурсія
+		if (left < j)
+			sortByPressure(vec, left, j, 0);
+		if (i < right)
+			sortByPressure(vec, i, right, 0);
+	}
+}
+
+void sortByPulse(vector<CPatient> & vec, int left, int right, bool increase)
+{
+	int i = left, j = right;
+	CPatient tmp;
+	int pivot = vec[(left + right) / 2].getPulse();
+
+	if(increase){
+		while (i <= j)
+		{
+			while (vec[i].getPulse() < pivot)
+				i++;
+			while (vec[j].getPulse() > pivot)
+				j--;
+			if (i <= j) {
+					tmp = vec[i];
+					vec[i] = vec[j];
+					vec[j] = tmp;
+
+				i++;
+				j--;
+			}
+		};
+	//рекурсія
+	if (left < j)
+		sortByPulse(vec, left, j, 1);
+	if (i < right)
+		sortByPulse(vec, i, right, 1);
+	}
+
+	else {
+		while (i <= j)
+		{
+			while (vec[i].getPulse() > pivot)
+				i++;
+			while (vec[j].getPulse() < pivot)
+				j--;
+			if (i <= j) {
+					tmp = vec[i];
+					vec[i] = vec[j];
+					vec[j] = tmp;
+
+				i++;
+				j--;
+			}
+		};
+	//рекурсія
+	if (left < j)
+		sortByPulse(vec, left, j, 0);
+	if (i < right)
+		sortByPulse(vec, i, right, 0);
+	}
+}
+
+void showDonors(TStringGrid * SGTable, vector<CPatient> vPatients)
+{
+	SGTable->ColCount=vPatients.size();
+
+	for(int j=2; j<SGTable->RowCount; j++) {
+		SGTable->Rows[j]->Clear();
+	}
+
+	string tmp="";
+	for(int i=0; i<vPatients.size(); i++){
+		tmp=vPatients[i].getSurname()+" "+vPatients[i].getName();
+		SGTable->Cells[i][0]=(tmp.c_str());
+	}
+
+	int counter=0;
+	int grouptmp, group;
+	bool rhtmp, rh;
+	for(int i=0; i<vPatients.size(); i++){
+		counter=0;
+		group = vPatients[i].getBloodType();
+		rh = vPatients[i].getRhFactor();
+
+		if((!rh)&&group==1){
+			for(int j=0; j<vPatients.size(); j++){
+				if(j!=i){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if(rh&&group==1){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if((rhtmp)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if((!rh)&&group==2){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if((grouptmp==2||grouptmp==4)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if(rh&&group==2){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if(rhtmp&&(grouptmp==2||grouptmp==4)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if((!rh)&&group==3){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if((grouptmp==3||grouptmp==4)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if(rh&&group==3){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if(rhtmp&&(grouptmp==3||grouptmp==4)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if((!rh)&&group==4){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if(grouptmp==4&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if(rh&&group==4){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if(rhtmp&&grouptmp==4&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+	}
+}
+
+void showRecipients(TStringGrid * SGTable, vector<CPatient> vPatients)
+{
+	SGTable->ColCount=vPatients.size();
+	for(int j=2; j<SGTable->RowCount; j++) {
+		SGTable->Rows[j]->Clear();
+	}
+
+	string tmp="";
+	for(int i=0; i<vPatients.size(); i++){
+		tmp=vPatients[i].getSurname()+" "+vPatients[i].getName();
+		SGTable->Cells[i][0]=(tmp.c_str());
+	}
+
+	int counter=0;
+	int grouptmp, group;
+	bool rhtmp, rh;
+	for(int i=0; i<vPatients.size(); i++){
+		counter=0;
+		group = vPatients[i].getBloodType();
+		rh = vPatients[i].getRhFactor();
+
+		if(rh&&group==4){
+			for(int j=0; j<vPatients.size(); j++){
+				if(j!=i){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if((!rh)&&group==4){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if((!rhtmp)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if(rh&&group==3){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if((grouptmp==1||grouptmp==3)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if((!rh)&&group==3){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if((!rhtmp)&&(grouptmp==1||grouptmp==3)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if(rh&&group==2){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if((grouptmp==1||grouptmp==2)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if((!rh)&&group==2){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if((!rhtmp)&&(grouptmp==1||grouptmp==2)&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if(rh&&group==1){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if(grouptmp==1&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+		else if((!rh)&&group==1){
+			for(int j=0; j<vPatients.size(); j++){
+				grouptmp = vPatients[j].getBloodType();
+				rhtmp = vPatients[j].getRhFactor();
+				if((!rhtmp)&&grouptmp==1&&(j!=i)){
+					tmp=vPatients[j].getSurname()+" "+vPatients[j].getName();
+					SGTable->Cells[i][++counter+1]=tmp.c_str();
+					if(counter>SGTable->RowCount-2) SGTable->RowCount++;
+				}
+			}
+		}
+	}
+}
+//---------------------------------------------------------------------------
+#pragma package(smart_init)

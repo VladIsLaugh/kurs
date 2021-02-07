@@ -1,0 +1,72 @@
+//---------------------------------------------------------------------------
+
+#ifndef MainUnitH
+#define MainUnitH
+//---------------------------------------------------------------------------
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Forms.hpp>
+#include <Vcl.Dialogs.hpp>
+#include <Vcl.ExtDlgs.hpp>
+#include <Vcl.Grids.hpp>
+#include <Vcl.ComCtrls.hpp>
+#include <Vcl.Menus.hpp>
+#include <Vcl.ExtCtrls.hpp>
+//---------------------------------------------------------------------------
+class TMainForm : public TForm
+{
+__published:	// IDE-managed Components
+	TButton *Button1;
+	TOpenTextFileDialog *OpenTextFileDialog;
+	TStringGrid *SGMain;
+	TButton *BSort;
+	TButton *BMessage;
+	TButton *BGroup;
+	TButton *ShowInfo;
+	TTabControl *TabControl;
+	TStringGrid *SGRecipients;
+	TStringGrid *SGDonors;
+	TMainMenu *MainMenu;
+	TMenuItem *menuFile;
+	TMenuItem *CtrlO;
+	TMenuItem *menuFunc;
+	TButton *BAddPatient;
+	TRadioGroup *RGSort;
+	TRadioGroup *RGGroup;
+	TMenuItem *menuHelp;
+	TMenuItem *CtrlS1;
+	TMenuItem *CtrlAltS1;
+	TMenuItem *N2;
+	TMenuItem *Exit;
+	TMenuItem *funcAdd;
+	TMenuItem *funcSort;
+	TMenuItem *funcGroup;
+	TMenuItem *funcRh;
+	TMenuItem *funcInfo;
+	TMenuItem *funcMessage;
+	TSaveDialog *SaveDialog;
+	void __fastcall Button1Click(TObject *Sender);
+	void __fastcall BSortClick(TObject *Sender);
+	void __fastcall BMessageClick(TObject *Sender);
+	void __fastcall BGroupClick(TObject *Sender);
+	void __fastcall ShowInfoClick(TObject *Sender);
+	void __fastcall TabControlChange(TObject *Sender);
+	void __fastcall BAddPatientClick(TObject *Sender);
+	void __fastcall funcMessageClick(TObject *Sender);
+	void __fastcall funcInfoClick(TObject *Sender);
+	void __fastcall funcRhClick(TObject *Sender);
+	void __fastcall funcGroupClick(TObject *Sender);
+	void __fastcall funcSortClick(TObject *Sender);
+	void __fastcall funcAddClick(TObject *Sender);
+	void __fastcall ExitClick(TObject *Sender);
+	void __fastcall CtrlAltS1Click(TObject *Sender);
+	void __fastcall CtrlS1Click(TObject *Sender);
+private:	// User declarations
+public:		// User declarations
+	__fastcall TMainForm(TComponent* Owner);
+};
+//---------------------------------------------------------------------------
+extern PACKAGE TMainForm *MainForm;
+//---------------------------------------------------------------------------
+#endif

@@ -1,0 +1,42 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+
+
+#include "Table.h"
+#include "MainUnit.h"
+
+
+
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TFTable *FTable;
+
+
+//---------------------------------------------------------------------------
+__fastcall TFTable::TFTable(TComponent* Owner, vector<CPatient> vPatients)
+	: TForm(Owner)
+{
+	SGTable->ColCount=vPatients.size();
+
+	string tmp="";
+	for(int i=0; i<vPatients.size(); i++){
+		tmp=vPatients[i].getSurname()+" "+vPatients[i].getName();
+		SGTable->Cells[i][0]=(tmp.c_str());
+	}
+
+	for(int i=0; i<vPatients.size(); i++){
+		int group = vPatients[i].getBloodType();
+		bool rh = vPatients[i].getRhFactor();
+		if(!(rh&&group==1)){
+			for(int j=0; j<vPatients.size(); j++){
+				tmp=vPatients[i].getSurname()+" "+vPatients[i].getName();
+				SGTable->Cells[i][j]=
+			}
+		}
+	}
+
+}
+//---------------------------------------------------------------------------

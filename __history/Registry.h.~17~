@@ -1,0 +1,48 @@
+//---------------------------------------------------------------------------
+
+#ifndef RegistryH
+#define RegistryH
+
+#include "Patient.h"
+#include "Functions.h"
+#include <vector>
+#include <algorithm>
+
+//класс  CRegistry ("Регістр")
+//містить вектор об'єктів класу CPatient
+//та ф-ції для роботи з ним
+
+class CRegistry
+{
+	vector<CPatient> vRegistry;
+   public:
+	CRegistry() {;}
+	//конструтор копій
+	CRegistry(CRegistry & rg) {vRegistry = rg.getRegistry();}
+	//кількість пацієнтів
+	int getSize() {return vRegistry.size();}
+	vector<CPatient> & getRegistry(){return vRegistry;}
+	CPatient operator[](int i){return vRegistry[i];}
+	//ф-ція завантаження вектора пацієнтів з масиву рядків
+	void loadInfoFromFile(TStringList *);
+	//вивід вектора пацієнтів у таблицю
+	void show(TStringGrid* );
+	//сортування вектора пацієнтів за тиском
+	void sortByPressure(int left, int right);
+	//очистка вектора пацієнтів
+	void clear() {vRegistry.clear();}
+	//групування вектора пацієнтів за групою крові
+	void groupBloodType();
+	//групування вектора пацієнтів за резусом
+	void groupRhFactor(bool);
+	//додавання нового пацієнта
+	void addPatient(CPatient);
+	//перевірка чи вектор пацієнтів пустий
+	bool IsEmpty();
+    //видалення обраного пацієнта за індексом
+    void deletePatient(int );
+};
+
+
+//---------------------------------------------------------------------------
+#endif

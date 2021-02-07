@@ -1,0 +1,243 @@
+//---------------------------------------------------------------------------
+#include "Registry.h"
+#include <sstream>
+#include <string>
+#include <locale>
+
+void CRegistry::loadInfoFromFile(TStringList* sList)
+{
+	//локалізація кирилиці для ф-ції isalpha()
+	locale loc_ru("");
+
+	int len;
+
+	AnsiString anstrCurr;
+	string sCurr;
+	string token;
+	CPatient tmp;
+
+	char *ptr=NULL;
+	char *delim =" .,";
+
+//поділ списку стрічок на рядки, рядків - на слова
+ for(int i=0; i<sList->Count; i++)
+ {
+		int flag=0;
+		sCurr =AnsiString(sList->Strings[i]).c_str() ;
+
+		istringstream iss(sCurr);
+		getline(iss, token, ' ');
+
+		//якщо слово містить зайвий символ вивести номер рядка з помилкою
+		for(int j=0; j<token.size(); j++)
+		 {
+			if(!isalpha(token[j], loc_ru)){
+				ShowMessage("Рядок №"+ IntToStr(i)+": неправильний формат даних (прізвище)");
+				flag=1;
+			}
+		 }
+		 if(flag) continue;
+		tmp.setSurname(token);
+
+		flag=0;
+		getline(iss, token, ' ');
+		for(int j=0; j<token.size(); j++)
+		 {
+			if(!isalpha(token[j], loc_ru)) {
+				ShowMessage("Рядок №"+ IntToStr(i)+": неправильний формат даних (ім'я)");
+				flag=1;
+			}
+		 }
+		 if(flag) continue;
+		tmp.setName(token);
+
+		getline(iss, token, ' ');
+		int group = atoi(token.c_str());
+		if(!(group==1||group==2||group==3||group==4)){
+			ShowMessage(("Рядок №"+ IntToStr(i)+": неправильний формат даних (група крові)"));
+			continue;
+		}
+		tmp.setBloodType(group);
+
+		getline(iss, token, ' ');
+		if(!(token=="+"||token=="-")){
+			ShowMessage("Рядок №"+ IntToStr(i)+": неправильний формат даних (резус-фактор)");
+			continue;
+		}
+		if(token == "+"){
+			tmp.setRhFactor(true);
+		}
+		else if(token == "-"){
+			tmp.setRhFactor(false);
+		}
+
+		getline(iss, token, '/');
+		int spress;
+		if((!TryStrToInt(token.c_str(), spress))) {
+			ShowMessage("Рядок №"+ IntToStr(i)+": неправильний формат даних (верхня межа тиску)");
+			continue;
+		}
+		if((spress<70)||(spress>170)) {
+			ShowMessage("Рядок №"+ IntToStr(i)+": верхня межа тиску має  бути у межах від 70 до 170");
+			continue;
+		}
+		tmp.setSPressure(spress);
+
+		getline(iss, token, ' ');
+		int dpress;
+		if(!TryStrToInt(token.c_str(), dpress)) {
+			ShowMessage("Рядок №"+ IntToStr(i)+": неправильний формат даних (нижня межа тиску)");
+			continue;
+		}
+		if((dpress<50)||(dpress>110)) {
+			ShowMessage("Рядок №"+ IntToStr(i)+": нижня межа тиску має  бути у межах від 50 до 110");
+			continue;
+		}
+		tmp.setDPressure(dpress);
+
+		getline(iss, token, ' ');
+		int pulse = atoi(token.c_str());
+		if(!TryStrToInt(token.c_str(), pulse)) {
+			ShowMessage("Рядок №"+ IntToStr(i)+": неправильний формат даних (пульс)");
+			continue;
+		}
+		if((pulse<35)||(pulse>150)) {
+			ShowMessage("Рядок №"+ IntToStr(i)+": нижня межа тиску має  бути у межах від 35 до 150");
+			continue;
+		}
+		tmp.setPulse(pulse);
+
+		vRegistry.push_back(tmp);
+	}
+}
+
+void CRegistry::show(TStringGrid* SG)
+{
+	for(int i=0; i<SG->ColCount; i++) {
+		SG->Cols[i]->Clear();
+
+	}
+
+	SG->Cells[0][0]="№";
+	SG->Cells[1][0]="Прізвище";
+	SG->Cells[2][0]="Ім'я";
+	SG->Cells[3][0]="Група крові";
+	SG->Cells[4][0]="Резус фактор";
+	SG->Cells[5][0]="Тиск";
+	SG->Cells[6][0]="Пульс";
+
+	int row=0;
+	for(int i=0; i<vRegistry.size(); i++) {
+		if(++row==SG->RowCount) SG->RowCount++;
+		vRegistry[i].printToSG(SG, i+1);
+	}
+	if(SG->RowCount>row)SG->RowCount=row+1;
+}
+
+void CRegistry::sortByPressure(int left, int right)
+{
+	//сортування вектору пацієнтів за допомогою алгоритму швидкого сортування
+	int i = left, j = right;
+	CPatient tmp;
+	int pivot = vRegistry[(left + right) / 2].getSPressure();
+
+
+	while (i <= j)
+	{
+		while (vRegistry[i].getSPressure() < pivot)
+			i++;
+		while (vRegistry[j].getSPressure() > pivot)
+			j--;
+		if (i <= j) {
+				tmp = vRegistry[i];
+				vRegistry[i] = vRegistry[j];
+				vRegistry[j] = tmp;
+
+			i++;
+			j--;
+		}
+	};
+
+	//рекурсія
+	if (left < j)
+		sortByPressure(left, j);
+	if (i < right)
+		sortByPressure(i, right);
+}
+
+void CRegistry::groupBloodType()
+{
+	vector<CPatient> tmp;
+	for(int j=1; j>=0; j--){
+		for(int i=0; i<vRegistry.size(); i++)
+		{
+			if(vRegistry[i].getRhFactor()==j)
+			{
+				tmp.push_back(vRegistry[i]);
+			}
+		}
+	}
+
+	vRegistry=tmp;
+	tmp.clear();
+
+	for(int j=1; j<=4; j++){
+		for(int i=0; i<vRegistry.size(); i++)
+		{
+			if(vRegistry[i].getBloodType()==j)
+			{
+				tmp.push_back(vRegistry[i]);
+			}
+		}
+	}
+
+	vRegistry=tmp;
+
+}
+
+void CRegistry::groupRhFactor(bool increase)
+{
+	vector<CPatient> tmp1;
+    vector<CPatient> tmp2;
+
+		for(int i=0; i<vRegistry.size(); i++)
+		{
+			if(vRegistry[i].getRhFactor()==1)
+			{
+				tmp1.push_back(vRegistry[i]);
+			}
+			else
+			{
+				tmp2.push_back(vRegistry[i]);
+			}
+		}
+
+	if(increase){
+		sortByPulse(tmp1, 0, tmp1.size()-1, 1);
+		sortByPulse(tmp2, 0, tmp2.size()-1, 1);
+	}
+	else{
+		sortByPulse(tmp1, 0, tmp1.size()-1, 0);
+		sortByPulse(tmp2, 0, tmp2.size()-1, 0);
+	}
+
+	vRegistry.clear();
+	vRegistry=tmp1;
+	vRegistry.insert(vRegistry.end(), tmp2.begin(), tmp2.end());
+}
+
+void CRegistry::addPatient(CPatient add)
+{
+    vRegistry.push_back(add);
+}
+
+bool CRegistry::IsEmpty()
+{
+	if(vRegistry.empty())  return 1;
+	else return 0;
+}
+
+void CRegistry::deletePatient(int index)
+{
+    vRegistry.erase(vRegistry.begin()+index);
+}

@@ -1,0 +1,24 @@
+//---------------------------------------------------------------------------
+
+#ifndef RegistryH
+#define RegistryH
+
+#include "Patient.h"
+#include <vector>
+//#include <Vcl.Grids.hpp>
+
+class CRegistry
+{
+	vector<CPatient> vRegistry;
+   public:
+	CRegistry() {;}
+	CRegistry(int size);
+	int getSize() {return vRegistry.size();}
+    CPatient operator[](int i){return vRegistry[i];}
+	void loadInfoFromFile(TStringList *);
+	void show(TStringGrid* );
+};
+
+
+//---------------------------------------------------------------------------
+#endif

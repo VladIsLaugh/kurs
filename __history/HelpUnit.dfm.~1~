@@ -1,0 +1,40 @@
+object FormHelp: TFormHelp
+  Left = 0
+  Top = 0
+  Caption = 'FormHelp'
+  ClientHeight = 342
+  ClientWidth = 639
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object TreeView1: TTreeView
+    Left = 24
+    Top = 24
+    Width = 273
+    Height = 297
+    Indent = 19
+    TabOrder = 0
+  end
+  object REHelp: TRichEdit
+    Left = 303
+    Top = 24
+    Width = 328
+    Height = 297
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Lines.Strings = (
+      'REHelp')
+    ParentFont = False
+    TabOrder = 1
+    Zoom = 100
+  end
+end
